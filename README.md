@@ -4,8 +4,10 @@ FastAPI backend for an AI recruitment platform with:
 
 - resume upload and Llama-based candidate analysis
 - auto-generated interview questions
+- configurable recruiter scripts with placeholders
 - Twilio outbound interview calls
 - ElevenLabs voice prompts
+- pause, resume, skip, and end call controls
 - session scoring and hiring summaries
 - Render deployment support
 
@@ -16,6 +18,7 @@ FastAPI backend for an AI recruitment platform with:
 3. Start an outbound call with `/api/v1/calls`.
 4. Twilio calls the candidate, captures spoken answers, and posts them back to the backend.
 5. The backend evaluates each answer with the LLM, speaks the next prompt with ElevenLabs, and stores the session result.
+6. Recruiters can control the session with pause, resume, skip, and end actions.
 
 ## Project layout
 
@@ -40,6 +43,8 @@ uvicorn app.main:app --reload
 ```
 
 Open `http://localhost:8000/docs`.
+
+See [SETUP_AND_VERIFICATION.md](D:/ai-recruitment-platform/SETUP_AND_VERIFICATION.md) for key setup, integration, and test steps.
 
 ## Required environment variables
 

@@ -6,12 +6,14 @@ from app.core.config import get_settings
 from app.db.models import CandidateResponse, CandidateSession, SessionStatus
 from app.models.schemas import AnswerEvaluation, InterviewQuestion, ResumeAnalysis
 from app.services.llm_service import LLMService
+from app.services.script_service import ScriptService
 
 
 class InterviewService:
     def __init__(self) -> None:
         self.llm = LLMService()
         self.settings = get_settings()
+        self.script_service = ScriptService()
 
     def generate_questions(self, role_name: str, analysis: ResumeAnalysis) -> list[InterviewQuestion]:
         system_prompt = (
@@ -78,10 +80,12 @@ class InterviewService:
             db.commit()
             return AnswerEvaluation(score=score, feedback=summary, completed=True)
 
+        prompt = self.script_service.build_follow_up(session, feedback, questions[next_index].question)
         db.commit()
         return AnswerEvaluation(
             score=score,
             feedback=feedback,
+            prompt=prompt,
             next_question=questions[next_index],
             completed=False,
         )

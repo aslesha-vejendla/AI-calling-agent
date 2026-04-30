@@ -7,9 +7,10 @@ from twilio.twiml.voice_response import Gather, VoiceResponse
 
 from app.db.models import CandidateSession, SessionStatus
 from app.db.session import get_db
-from app.models.schemas import CallCreatePayload, CallCreateResponse, InterviewQuestion
+from app.models.schemas import CallCreatePayload, CallCreateResponse, InterviewQuestion, SessionControlPayload
 from app.services.elevenlabs_service import ElevenLabsService
 from app.services.interview_service import InterviewService
+from app.services.script_service import ScriptService
 from app.services.twilio_service import TwilioService
 
 router = APIRouter()
@@ -69,10 +70,7 @@ def start_voice_call(session_id: str, db: Session = Depends(get_db)) -> Response
     session = _get_session_or_404(db, session_id)
     questions = [InterviewQuestion.model_validate(item) for item in session.questions]
     first_question = questions[session.current_question_index]
-    intro = (
-        f"Hello {session.candidate_name}. This is your AI interview for the {session.role_name} role. "
-        f"Let us begin. First question. {first_question.question}"
-    )
+    intro = ScriptService().build_intro(session, first_question.question)
     action_url = f"/api/v1/calls/twilio/answer/{session_id}"
     return _gather_with_audio(action_url, intro)
 
@@ -86,6 +84,11 @@ async def handle_answer(
     session = _get_session_or_404(db, session_id)
     form = await request.form()
     speech_result = str(form.get("SpeechResult") or "").strip()
+
+    if session.status == SessionStatus.paused:
+        reprompt = ScriptService().build_pause_message(session)
+        action_url = f"/api/v1/calls/twilio/answer/{session_id}"
+        return _gather_with_audio(action_url, reprompt)
 
     if not speech_result:
         reprompt = "I did not catch that. Please answer after the tone."
@@ -106,6 +109,34 @@ async def handle_answer(
         return Response(content=str(response), media_type="application/xml")
 
     next_question = evaluation.next_question.question if evaluation.next_question else "Thank you."
-    prompt = f"Recorded. {evaluation.feedback} Next question. {next_question}"
+    prompt = evaluation.prompt or f"Recorded. {evaluation.feedback} Next question. {next_question}"
     action_url = f"/api/v1/calls/twilio/answer/{session_id}"
     return _gather_with_audio(action_url, prompt)
+
+
+@router.post("/sessions/{session_id}/controls")
+def control_session(
+    session_id: str,
+    payload: SessionControlPayload,
+    db: Session = Depends(get_db),
+) -> dict[str, str | int]:
+    session = _get_session_or_404(db, session_id)
+
+    if payload.action == "pause":
+        session.status = SessionStatus.paused
+    elif payload.action == "resume":
+        session.status = SessionStatus.in_progress
+    elif payload.action == "skip":
+        if session.current_question_index < len(session.questions) - 1:
+            session.current_question_index += 1
+    elif payload.action == "end":
+        session.status = SessionStatus.completed
+
+    db.add(session)
+    db.commit()
+    return {
+        "session_id": session.id,
+        "status": session.status.value,
+        "current_question_index": session.current_question_index,
+        "action": payload.action,
+    }

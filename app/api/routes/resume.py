@@ -17,6 +17,8 @@ async def upload_resume(
     role_name: str = Form(...),
     phone_number: str = Form(...),
     candidate_email: str | None = Form(None),
+    company_name: str | None = Form(None),
+    script_id: str | None = Form(None),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> ResumeUploadResponse:
@@ -38,9 +40,16 @@ async def upload_resume(
         candidate_email=candidate_email,
         role_name=role_name,
         phone_number=phone_number,
+        company_name=company_name,
         resume_text=resume_text,
         resume_summary=profile.model_dump(),
         questions=[item.model_dump() for item in questions],
+        script_id=script_id,
+        script_variables={
+            "candidate_name": profile.candidate_name,
+            "job_title": role_name,
+            "company_name": company_name or "your company",
+        },
         status=SessionStatus.created,
     )
     db.add(session)
