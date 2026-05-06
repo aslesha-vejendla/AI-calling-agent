@@ -8,3 +8,4 @@ PyMuPDF==1.25.5
 requests==2.32.3
 twilio==9.5.2
 email-validator==2.2.0
+pymysql==1.1.0
