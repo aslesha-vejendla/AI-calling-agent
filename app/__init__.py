@@ -1,1 +1,0 @@
-"""Recruitment backend package."""
