@@ -1,3 +1,6 @@
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+
 export default function Dashboard() {
   const recentActivity = [
     {
@@ -37,12 +40,27 @@ export default function Dashboard() {
     },
   ]
 
+const navigate = useNavigate()
+
+const username = 
+  localStorage.getItem("username") 
+useEffect(() => {
+
+  const token =
+    localStorage.getItem("token")
+
+  if (!token) {
+    navigate("/login")
+  }
+
+}, [])
+
   return (
     <div style={{ padding: "20px" }}>
       {/* WELCOME */}
       <div style={{ marginBottom: "25px" }}>
         <h1 style={{ marginBottom: "5px" }}>
-          Welcome back, Munazza 
+          Welcome back, {username}
         </h1>
 
         <p style={{ color: "#777" }}>

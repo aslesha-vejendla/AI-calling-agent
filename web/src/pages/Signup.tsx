@@ -1,7 +1,10 @@
 import { Link, useNavigate } from "react-router-dom"
-
+import { useState } from "react"
 export default function Signup() {
+  const [username, setUsername] = useState("")
   const navigate = useNavigate()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
   const inputStyle = {
     width: "100%",
@@ -13,6 +16,40 @@ export default function Signup() {
     fontSize: "15px",
     outline: "none",
   }
+
+  const handleSignup = async () => {
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/signup",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
+      }
+    )
+
+    const data = await response.json()
+
+    console.log(data)
+
+    if (data.message === "User created successfully") {
+      alert("signup successful")
+      navigate("/login")
+      } else {
+        alert(data.message)
+      }
+
+  } catch (error) {
+    console.error(error)
+    alert("Server Error")
+  }
+}
 
   return (
     <div className="auth-wrapper">
@@ -53,22 +90,28 @@ export default function Signup() {
         <input
           placeholder="Your Name"
           style={inputStyle}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
 
         <input
           placeholder="email@domain.com"
           style={inputStyle}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
           type="password"
           placeholder="password"
           style={inputStyle}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
 
         <button
           className="auth-main-btn"
-          onClick={() => navigate("/")}
+          onClick={handleSignup}
         >
           Sign up with email
         </button>

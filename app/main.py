@@ -1,15 +1,21 @@
 from fastapi.responses import FileResponse
 from app.services.elevenlabs_service import text_to_speech
 from fastapi import FastAPI
-from app.routes.resume import router as resume_router
-from app.routes.session import router as session_router
+#from app.routes.resume import router as resume_router
+#from app.routes.session import router as session_router
 from app.services.twilio_service import make_call
 from fastapi import Request
 from fastapi.responses import Response
+from app.routes.auth import router as auth_router
+from app.models.user import Base
+from app.utils.database import engine
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-app.include_router(resume_router)
-app.include_router(session_router)
+app.include_router(auth_router)
+Base.metadata.create_all(bind=engine)
+#app.include_router(resume_router)
+#app.include_router(session_router)
 
 questions = [
     "Tell me about yourself.",
@@ -110,3 +116,10 @@ async def process_answer(request: Request):
         content=twiml_response,
         media_type="application/xml"
     )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

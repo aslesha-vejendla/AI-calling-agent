@@ -1,6 +1,9 @@
 import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react"
 
 export default function Login() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const navigate = useNavigate()
 
   const inputStyle = {
@@ -23,6 +26,44 @@ export default function Login() {
     cursor: "pointer",
     fontWeight: 500,
   }
+const handleLogin = async () => {
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      }
+    )
+
+    const data = await response.json()
+
+    if (data.access_token) {
+      localStorage.setItem(
+        "token",
+        data.access_token
+      )
+      localStorage.setItem(
+        "username",
+        data.username
+      )
+      alert("Login Successful")
+      navigate("/")
+    } else {
+      alert(data.message)
+    }
+  } catch (error) {
+    console.error(error)
+    alert("Server Error")
+  }
+}
+
 
   return (
     <div className="auth-wrapper">
@@ -40,6 +81,8 @@ export default function Login() {
         <input
           placeholder="email@domain.com"
           style={inputStyle}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
 
         <label style={{ marginBottom: "6px" }}>Password</label>
@@ -48,11 +91,13 @@ export default function Login() {
           type="password"
           placeholder="password"
           style={inputStyle}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
 
         <button
           className="auth-main-btn"
-          onClick={() => navigate("/")}
+          onClick={handleLogin}
         >
           Login
         </button>

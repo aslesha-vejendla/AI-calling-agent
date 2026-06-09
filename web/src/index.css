@@ -8,6 +8,13 @@
   font-family:'Kaisei Opti', serif;
 }
 
+html,
+body,
+#root{
+  width:100%;
+  min-height:100vh;
+}
+
 body{
   background:#f3f4f6;
 }
@@ -24,15 +31,181 @@ a{
   padding-right:10px;
 }
 
+/* ========================= */
+/* AUTH PAGE */
+/* ========================= */
+
+.auth-wrapper{
+  width:100%;
+  min-height:100vh;
+  display:flex;
+  overflow:hidden;
+  background:#111827;
+}
+
+.auth-form-section{
+  width:50%;
+  background:white;
+  padding:80px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.auth-title{
+  font-size:56px;
+  line-height:1.1;
+  margin-bottom:40px;
+  color:#111827;
+}
+
+.auth-label{
+  font-size:15px;
+  font-weight:600;
+  margin-bottom:8px;
+  color:#374151;
+}
+
+.auth-input{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:14px;
+  background:#f3f4f6;
+  margin-bottom:22px;
+  font-size:15px;
+  outline:none;
+}
+
+.auth-input:focus{
+  background:#ede9fe;
+}
+
+.auth-main-btn{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(
+    135deg,
+    #5b21b6,
+    #9333ea
+  );
+  color:white;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.auth-main-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 16px 35px rgba(91,33,182,0.25);
+}
+
+.auth-divider{
+  text-align:center;
+  margin:26px 0;
+  color:#6b7280;
+  font-size:15px;
+}
+
+.auth-socials{
+  display:flex;
+  gap:14px;
+}
+
+.social-btn{
+  flex:1;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid #e5e7eb;
+  background:white;
+  cursor:pointer;
+  font-weight:600;
+  font-size:15px;
+}
+
+.social-btn:hover{
+  background:#f9fafb;
+  transform:translateY(-2px);
+}
+
+.auth-overlay{
+  width:50%;
+  background:linear-gradient(
+    145deg,
+    #5b21b6,
+    #9333ea
+  );
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  position:relative;
+  overflow:hidden;
+}
+
+.auth-overlay::before{
+  content:"";
+  position:absolute;
+  width:220%;
+  height:220%;
+  background:rgba(255,255,255,0.05);
+  transform:rotate(25deg);
+  animation:floatGlow 8s linear infinite;
+}
+
+.auth-overlay-content{
+  position:relative;
+  z-index:2;
+  text-align:center;
+  color:white;
+  padding:40px;
+}
+
+.auth-overlay-content h2{
+  font-size:52px;
+  margin-bottom:24px;
+}
+
+.switch-btn{
+  padding:14px 34px;
+  border:none;
+  border-radius:50px;
+  background:white;
+  color:#5b21b6;
+  font-weight:700;
+  cursor:pointer;
+  font-size:15px;
+}
+
+.switch-btn:hover{
+  transform:scale(1.05);
+}
+
+@keyframes floatGlow{
+  0%{
+    transform:rotate(25deg) translateY(0px);
+  }
+
+  50%{
+    transform:rotate(25deg) translateY(40px);
+  }
+
+  100%{
+    transform:rotate(25deg) translateY(0px);
+  }
+}
+
+/* ========================= */
 /* EXPANDABLE AGENT CARD */
+/* ========================= */
 
 .agent-card-wrapper{
   width:100%;
   display:flex;
   justify-content:flex-start;
 }
-
-/* CARD */
 
 .agent-card{
   width:100%;
@@ -65,8 +238,6 @@ a{
     0 10px 22px rgba(0,0,0,0.08);
 }
 
-/* HOVER */
-
 .agent-card:hover{
   transform:
     translateY(-10px)
@@ -75,8 +246,6 @@ a{
   box-shadow:
     0 28px 50px rgba(91,33,182,0.25);
 }
-
-/* SHIMMER EFFECT */
 
 .agent-card::before{
   content:"";
@@ -104,8 +273,6 @@ a{
 .agent-card:hover::before{
   top:100%;
 }
-
-/* TOP TITLE AREA */
 
 .agent-top{
   height:180px;
@@ -143,8 +310,6 @@ a{
   display:block;
 }
 
-/* EXPAND CONTENT */
-
 .agent-expand-content{
   background:white;
 
@@ -170,8 +335,6 @@ a{
   padding:24px;
 }
 
-/* INFO ROWS */
-
 .agent-info-row{
   display:flex;
 
@@ -196,8 +359,6 @@ a{
 .agent-info-row span:last-child{
   font-weight:700;
 }
-
-/* BUTTONS */
 
 .agent-actions{
   display:flex;

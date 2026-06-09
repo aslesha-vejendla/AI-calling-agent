@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom"
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 import {
   Menu,
@@ -17,7 +18,7 @@ import {
 
 function Sidebar() {
   const location = useLocation()
-
+  const navigate = useNavigate()
   const [open, setOpen] = useState(true)
 
   const discover = [
@@ -69,7 +70,7 @@ function Sidebar() {
       path: "/settings",
       icon: <Settings size={18} />,
     },
-  ]
+   ]
 
   const isActive = (path: string) => location.pathname === path
 
@@ -179,6 +180,20 @@ function Sidebar() {
             {open && item.name}
           </Link>
         ))}
+        <button
+          onClick={() => {
+            localStorage.removeItem("token")
+            navigate("/login")
+          }}
+          style={{
+            border: "none",
+            background: "transparent",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
       </div>
     </div>
   )
