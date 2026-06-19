@@ -1,34 +1,24 @@
 from fastapi.responses import FileResponse
 from app.services.elevenlabs_service import text_to_speech
-from fastapi import FastAPI
-#from app.routes.resume import router as resume_router
-#from app.routes.session import router as session_router
-from app.services.twilio_service import make_call
-from fastapi import Request
+from fastapi import FastAPI, Request
 from fastapi.responses import Response
-from app.routes.auth import router as auth_router
-from app.models.user import Base
-from app.utils.database import engine
+from app.services.twilio_service import make_call
 from fastapi.middleware.cors import CORSMiddleware
+from app.services.question_generator import generate_questions
+from app.services.evaluation_agent import EvaluationAgent
 
 app = FastAPI()
-app.include_router(auth_router)
-Base.metadata.create_all(bind=engine)
-#app.include_router(resume_router)
-#app.include_router(session_router)
 
-questions = [
-    "Tell me about yourself.",
-    "Explain a project where you used Python.",
-    "How do you handle missing values in a dataset?",
-    "What are your strengths as a data analyst?"
-]
+questions = generate_questions()
+
 current_question_index = 0
 candidate_answers = []
+
 
 @app.get("/")
 def root():
     return {"message": "Interview Agent Running"}
+
 
 @app.get("/test-voice")
 def test_voice():
@@ -41,25 +31,29 @@ def test_voice():
         file_path,
         media_type="audio/mpeg",
         filename="voice.mp3"
-    )  
+    )
+
 
 @app.get("/call")
 def call():
 
     sid = make_call(
-    "+917977736018",
-    questions[current_question_index])
+        "+917977736018",
+        questions[current_question_index]
+    )
 
     return {"call_sid": sid}
+
 
 @app.post("/process-answer")
 async def process_answer(request: Request):
 
     global current_question_index
+    global candidate_answers
 
     form_data = await request.form()
 
-    speech_result = form_data.get("SpeechResult")
+    speech_result = form_data.get("SpeechResult", "")
 
     print("\nCandidate Answer:")
     print(speech_result)
@@ -71,17 +65,49 @@ async def process_answer(request: Request):
 
     current_question_index += 1
 
+    # =========================
+    # INTERVIEW COMPLETED
+    # =========================
     if current_question_index >= len(questions):
 
-        print("\nFinal Answers:")
+        print("\n========== FINAL ANSWERS ==========")
         print(candidate_answers)
 
+        # -------------------------
+        # AI EVALUATION
+        # -------------------------
+        evaluator = EvaluationAgent()
+
+        answers_only = [
+            item["answer"]
+            for item in candidate_answers
+        ]
+
+        evaluation_result = evaluator.evaluate(
+            answers_only
+        )
+
+        print("\n========== AI EVALUATION ==========")
+        print(evaluation_result)
+
+        print("\n========== INTERVIEW REPORT ==========")
+
+        for item in candidate_answers:
+            print(f"\nQ: {item['question']}")
+            print(f"A: {item['answer']}")
+
+        print("\nFINAL RESULT:")
+        print(evaluation_result)
+
+        # Reset for next interview
+        candidate_answers.clear()
         current_question_index = 0
 
         twiml_response = """
         <Response>
             <Say>
-                Thank you for completing the interview.Our team will review your responses and get back to you soon.
+                Thank you for completing the interview.
+                Our team will review your responses and get back to you soon.
                 Have a great day.
             </Say>
 
@@ -90,6 +116,9 @@ async def process_answer(request: Request):
         </Response>
         """
 
+    # =========================
+    # ASK NEXT QUESTION
+    # =========================
     else:
 
         next_question = questions[current_question_index]
@@ -98,7 +127,7 @@ async def process_answer(request: Request):
         <Response>
 
             <Gather input="speech"
-                    action="https://snort-deprive-deed.ngrok-free.dev/process-answer"
+                    action="https://brethren-curtly-shun.ngrok-free.dev/process-answer"
                     method="POST"
                     speechTimeout="5"
                     timeout="10">
@@ -116,6 +145,8 @@ async def process_answer(request: Request):
         content=twiml_response,
         media_type="application/xml"
     )
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
