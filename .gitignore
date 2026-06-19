@@ -1,1 +1,10 @@
-*
+# Ignore environment
+.venv/
+__pycache__/
+*.pyc
+
+# Ignore secrets
+.env
+
+# Ignore generated files
+output.mp3
